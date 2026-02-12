@@ -1,6 +1,7 @@
 
 ## 프롬프트
 
+```
 당신은 대한민국 최고의 주식 투자 전략가입니다. 아래 제공되는 오늘의 시장 데이터를 분석하여 투자 리포트를 작성해 주세요.
 
 ## 오늘 날짜: {{ $now.format('yyyy-MM-dd') }}
@@ -15,3 +16,100 @@
 4. 말투: 신뢰감 있고 전문적인 어조(~입니다, ~할 것으로 보입니다)를 사용하세요.
 5. 주의: HTML 태그를 쓰지 말고 순수 텍스트로만 답변하세요. (줄바꿈은 사용 가능)
 
+```
+
+## 코드노드
+
+```
+const data = $input.all()[0].json;
+
+// 데이터 파싱 (문자열일 경우 파싱, 이미 객체/배열이면 그대로 사용)
+const parseData = (val) => {
+  if (typeof val === 'string') return JSON.parse(val);
+  return val;
+};
+
+const kospi = parseData(data['코스피']);
+const stockData = parseData(data['주식']);
+
+// 종목이 하나여도 배열로 변환하여 처리
+const stocks = Array.isArray(stockData) ? stockData : [stockData];
+
+// 숫자 포맷팅 헬퍼
+const formatNumber = (num) => {
+  return Number(num).toLocaleString('ko-KR');
+};
+
+// 색상 결정 헬퍼
+const getColor = (value) => {
+  const num = parseFloat(String(value).replace(/[+%]/g, ''));
+  if (num > 0) return '#d32f2f'; // 상승: 빨강
+  if (num < 0) return '#1976d2'; // 하락: 파랑
+  return '#666';
+};
+
+// 등락 표시 헬퍼
+const formatChange = (value) => {
+  const num = parseFloat(String(value).replace(/[+%]/g, ''));
+  if (num > 0) return '+' + formatNumber(num);
+  return formatNumber(num);
+};
+
+const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Malgun Gothic', sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; }
+    .container { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h1 { color: #1a237e; border-bottom: 3px solid #1a237e; padding-bottom: 10px; margin-bottom: 20px; }
+    h2 { color: #283593; margin-top: 30px; margin-bottom: 15px; font-size: 1.2em; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; background-color: white; }
+    th { background-color: #3f51b5; color: white; padding: 12px; text-align: left; font-weight: bold; font-size: 14px; }
+    td { padding: 12px; border-bottom: 1px solid #e0e0e0; font-size: 14px; }
+    .analysis { background-color: #f8f9fa; padding: 20px; border-left: 4px solid #3f51b5; margin-top: 20px; white-space: pre-wrap; line-height: 1.8; font-size: 14px; }
+    .date { color: #666; font-size: 0.9em; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📈 주식 시장 일일 리포트</h1>
+    <div class="date">${data.today}</div>
+    
+    <h2>🔷 코스피 지수</h2>
+    <table>
+      <tr><th>지수명</th><th>현재가</th><th>등락</th><th>등락률</th></tr>
+      <tr>
+        <td>${kospi.종목명}</td>
+        <td>${formatNumber(kospi.현재가)}</td>
+        <td style="color: ${getColor(kospi.등락)}">${formatChange(kospi.등락)}</td>
+        <td style="color: ${getColor(kospi.등락률)}">${formatChange(kospi.등락률)}%</td>
+      </tr>
+    </table>
+    
+    <h2>📊 관심 종목</h2>
+    <table>
+      <tr><th>종목명</th><th>현재가</th><th>등락</th><th>등락률</th></tr>
+      ${stocks.map(s => `
+      <tr>
+        <td><strong>${s.종목명}</strong></td>
+        <td>${formatNumber(s.현재가)}</td>
+        <td style="color: ${getColor(s.등락)}">${formatChange(s.등락)}</td>
+        <td style="color: ${getColor(s.등락률)}">${formatChange(s.등락률)}%</td>
+      </tr>
+      `).join('')}
+    </table>
+    
+    <h2>💡 전문가 분석</h2>
+    <div class="analysis">${data.analysis}</div>
+  </div>
+</body>
+</html>
+`;
+
+const subject = `[주식 리포트] ${data.today} - 시장 요약`;
+
+return [{ json: { subject, html } }];
+
+```
