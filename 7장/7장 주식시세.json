@@ -32,7 +32,7 @@
           "parameters": [
             {
               "name": "serviceKey",
-              "value": "c03f7f86ad41ad4303a895df45fc2fb8005ef551ac855c1a46842c98da0224f3"
+              "value": "YOUR_SERVICE_KEY_HERE"
             },
             {
               "name": "resultType",
@@ -91,7 +91,7 @@
           "parameters": [
             {
               "name": "serviceKey",
-              "value": "c03f7f86ad41ad4303a895df45fc2fb8005ef551ac855c1a46842c98da0224f3"
+              "value": "YOUR_SERVICE_KEY_HERE"
             },
             {
               "name": "numOfRows",
