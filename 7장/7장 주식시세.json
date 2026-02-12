@@ -1,0 +1,548 @@
+{
+  "name": "7장 주식시세",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 13
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        80
+      ],
+      "id": "adc51410-f823-4e67-8077-141fde3e5a4d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://apis.data.go.kr/1160100/service/GetMarketIndexInfoService/getStockMarketIndex",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "serviceKey",
+              "value": "c03f7f86ad41ad4303a895df45fc2fb8005ef551ac855c1a46842c98da0224f3"
+            },
+            {
+              "name": "resultType",
+              "value": "json"
+            },
+            {
+              "name": "idxNm",
+              "value": "코스피"
+            },
+            {
+              "name": "numOfRows",
+              "value": "1"
+            },
+            {
+              "name": "pageNo",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        -32
+      ],
+      "id": "af8d8041-3302-4fc7-b013-be586b84395d",
+      "name": "HTTP Request - 코스피"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AUB5PdtMhmTYL6Tl",
+          "mode": "list",
+          "cachedResultName": "stocks",
+          "cachedResultUrl": "/projects/hOOCvLMmq3tuMR88/datatables/AUB5PdtMhmTYL6Tl"
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        176
+      ],
+      "id": "8e99a8f5-6303-46a5-a465-f3c655e76c2b",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "url": "https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "serviceKey",
+              "value": "c03f7f86ad41ad4303a895df45fc2fb8005ef551ac855c1a46842c98da0224f3"
+            },
+            {
+              "name": "numOfRows",
+              "value": "1"
+            },
+            {
+              "name": "pageNo",
+              "value": "1"
+            },
+            {
+              "name": "resultType",
+              "value": "json"
+            },
+            {
+              "name": "itmsNm",
+              "value": "={{$json.name}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        176
+      ],
+      "id": "a5e8828b-8fb7-4def-a9e9-030610b9b649",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c22ded8-2a1e-4aa9-ac79-d735bacfef1e",
+              "name": "종목명",
+              "value": "={{ $json.response.body.items.item[0].itmsNm }}",
+              "type": "string"
+            },
+            {
+              "id": "0ebd3c5d-2c43-4059-9c61-415778dd31de",
+              "name": "현재가",
+              "value": "={{ $json.response.body.items.item[0].clpr }}",
+              "type": "string"
+            },
+            {
+              "id": "28ea780d-2c67-4da0-86d5-14a3daf44299",
+              "name": "등락",
+              "value": "={{ $json.response.body.items.item[0].vs }}",
+              "type": "string"
+            },
+            {
+              "id": "cfd7fc2a-bad4-47fd-87c3-8c47ebb20c23",
+              "name": "등락률",
+              "value": "={{ $json.response.body.items.item[0].fltRt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        176
+      ],
+      "id": "0bbc9259-a1f0-4c58-8872-ccb36ea6eb4a",
+      "name": "Edit Fields - 주식"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cb7ddfb3-0346-445a-a8a0-b7bb08727785",
+              "name": "종목명",
+              "value": "={{ $json.response.body.items.item[0].idxNm }}",
+              "type": "string"
+            },
+            {
+              "id": "4f3d877d-9f72-4a90-89eb-060663f73421",
+              "name": "현재가",
+              "value": "={{ $json.response.body.items.item[0].clpr }}",
+              "type": "number"
+            },
+            {
+              "id": "9d9295f4-e953-41db-a492-cf0f3bcb6969",
+              "name": "등락",
+              "value": "={{ $json.response.body.items.item[0].vs }}",
+              "type": "number"
+            },
+            {
+              "id": "1950282f-728f-48a2-a35b-2cd63d9523b2",
+              "name": "등락률",
+              "value": "={{ $json.response.body.items.item[0].fltRt }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        -32
+      ],
+      "id": "04123d5d-97d8-4664-9382-da3d7bb133cc",
+      "name": "Edit Fields - 코스피"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        896,
+        80
+      ],
+      "id": "cda36c76-3e86-4fdb-a2fb-fd38420aee6b",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        80
+      ],
+      "id": "3296a175-d9bb-4fd7-9176-a20f0f94c991",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=당신은 대한민국 최고의 주식 투자 전략가입니다. 아래 제공되는 오늘의 시장 데이터를 분석하여 투자 리포트를 작성해 주세요.\n\n## 시장 데이터\n\n{{ $json.data }}\n\n## 작성 지침:\n1. **시장 총평**: 코스피 지수의 움직임을 바탕으로 오늘 시장의 전반적인 분위기를 한 문장으로 요약하세요.\n2. **종목별 분석**: 관심 종목(삼성전자, SK하이닉스 등) 각각에 대해 현재 상태와 간단한 기술적 의견을 제시하세요.\n3. **투자 전략**: 위 데이터를 종합해 볼 때, 내일 시장에서 주의 깊게 봐야 할 포인트나 대응 전략을 전문가답게 조언해 주세요.\n4. **말투**: 신뢰감 있고 전문적인 어조(~입니다, ~할 것으로 보입니다)를 사용하세요.\n5. **주의**: HTML 태그를 쓰지 말고 순수 텍스트로만 답변하세요. (줄바꿈은 사용 가능)",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1344,
+        80
+      ],
+      "id": "34b2225a-3463-478e-bd15-32984c43003b",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3-flash-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        304
+      ],
+      "id": "3b289ceb-3e4c-4db9-bde5-adb2ecfcef0f",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TXxUKS5yUfyzEmms",
+          "name": "[지지플랩]n8n실습용"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3cc3416c-cb08-44ed-aa87-62507164781b",
+              "name": "today",
+              "value": "={{ $('HTTP Request - 코스피').item.json.response.body.items.item[0].basDt }}",
+              "type": "string"
+            },
+            {
+              "id": "b64e5093-d88b-49e4-b2d9-251c1907140b",
+              "name": "analysis",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "cec0f10e-2146-4f6d-b084-5caa5715010e",
+              "name": "코스피",
+              "value": "={{ $('Merge').all().map(i => i.json).find(s => s.종목명 === '코스피') }}",
+              "type": "string"
+            },
+            {
+              "id": "758fc929-b7a1-4e94-aad2-3304812e5146",
+              "name": "주식",
+              "value": "={{ $('Merge').all().map(i => i.json).filter(s => s.종목명 !== '코스피') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1648,
+        64
+      ],
+      "id": "034bf89e-deed-4c11-8554-5d3363536283",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.all()[0].json;\n\n// 데이터 파싱 (문자열일 경우 파싱, 이미 객체/배열이면 그대로 사용)\nconst parseData = (val) => {\n  if (typeof val === 'string') return JSON.parse(val);\n  return val;\n};\n\nconst kospi = parseData(data['코스피']);\nconst stockData = parseData(data['주식']);\n\n// 종목이 하나여도 배열로 변환하여 처리\nconst stocks = Array.isArray(stockData) ? stockData : [stockData];\n\n// 숫자 포맷팅 헬퍼\nconst formatNumber = (num) => {\n  return Number(num).toLocaleString('ko-KR');\n};\n\n// 색상 결정 헬퍼\nconst getColor = (value) => {\n  const num = parseFloat(String(value).replace(/[+%]/g, ''));\n  if (num > 0) return '#d32f2f'; // 상승: 빨강\n  if (num < 0) return '#1976d2'; // 하락: 파랑\n  return '#666';\n};\n\n// 등락 표시 헬퍼\nconst formatChange = (value) => {\n  const num = parseFloat(String(value).replace(/[+%]/g, ''));\n  if (num > 0) return '+' + formatNumber(num);\n  return formatNumber(num);\n};\n\nconst html = `\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: 'Malgun Gothic', sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; }\n    .container { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }\n    h1 { color: #1a237e; border-bottom: 3px solid #1a237e; padding-bottom: 10px; margin-bottom: 20px; }\n    h2 { color: #283593; margin-top: 30px; margin-bottom: 15px; font-size: 1.2em; }\n    table { width: 100%; border-collapse: collapse; margin: 20px 0; background-color: white; }\n    th { background-color: #3f51b5; color: white; padding: 12px; text-align: left; font-weight: bold; font-size: 14px; }\n    td { padding: 12px; border-bottom: 1px solid #e0e0e0; font-size: 14px; }\n    .analysis { background-color: #f8f9fa; padding: 20px; border-left: 4px solid #3f51b5; margin-top: 20px; white-space: pre-wrap; line-height: 1.8; font-size: 14px; }\n    .date { color: #666; font-size: 0.9em; margin-bottom: 20px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>📈 주식 시장 일일 리포트</h1>\n    <div class=\"date\">${data.today}</div>\n    \n    <h2>🔷 코스피 지수</h2>\n    <table>\n      <tr><th>지수명</th><th>현재가</th><th>등락</th><th>등락률</th></tr>\n      <tr>\n        <td>${kospi.종목명}</td>\n        <td>${formatNumber(kospi.현재가)}</td>\n        <td style=\"color: ${getColor(kospi.등락)}\">${formatChange(kospi.등락)}</td>\n        <td style=\"color: ${getColor(kospi.등락률)}\">${formatChange(kospi.등락률)}%</td>\n      </tr>\n    </table>\n    \n    <h2>📊 관심 종목</h2>\n    <table>\n      <tr><th>종목명</th><th>현재가</th><th>등락</th><th>등락률</th></tr>\n      ${stocks.map(s => `\n      <tr>\n        <td><strong>${s.종목명}</strong></td>\n        <td>${formatNumber(s.현재가)}</td>\n        <td style=\"color: ${getColor(s.등락)}\">${formatChange(s.등락)}</td>\n        <td style=\"color: ${getColor(s.등락률)}\">${formatChange(s.등락률)}%</td>\n      </tr>\n      `).join('')}\n    </table>\n    \n    <h2>💡 전문가 분석</h2>\n    <div class=\"analysis\">${data.analysis}</div>\n  </div>\n</body>\n</html>\n`;\n\nconst subject = `[주식 리포트] ${data.today} - 시장 요약`;\n\nreturn [{ json: { subject, html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        64
+      ],
+      "id": "d0b18cf0-afb9-4945-b731-e3c700c13d57",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "=snowgot@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2064,
+        64
+      ],
+      "id": "6fed2241-bf03-47c1-b0ff-b8265d8eab6f",
+      "name": "Send a message1",
+      "webhookId": "faaa9949-2853-4961-a575-bdfb64ededc1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ly5kxK8IPxftRoDg",
+          "name": "[지지플랩]임정_snowgot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Trigger",
+        "height": 528,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -144,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "688121c5-6686-48c1-8712-d447238894cc",
+      "name": "Sticky Note",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "# Task",
+        "height": 528,
+        "width": 1584,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        208,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "13fb04fc-9dce-42b4-b687-79cd8ef0966c",
+      "name": "Sticky Note1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "# Target",
+        "height": 528,
+        "width": 528,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1824,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "d0404b22-1f34-4214-a603-9c9858a79de6",
+      "name": "Sticky Note2",
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - 코스피",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - 코스피": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields - 코스피",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields - 주식",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields - 주식": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields - 코스피": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "9d17b141-6406-4829-ae1e-19c67e05b889",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0c3df53d06f8e98b76dce975edff00f3b3bb54cd4a475a425a4806301153f7bf"
+  },
+  "id": "S2G6dEXWpijYeE55gQkGa",
+  "tags": []
+}
