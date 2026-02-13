@@ -63,4 +63,4 @@ LLM 출력을 구조화하기 위한 JSON 스키마 예시입니다.
 2. **Google Gemini API 키** — Google AI Studio에서 API 키를 발급받고 n8n에 등록합니다.
 3. **Google Sheets OAuth2 자격 증명** — 결과를 기록할 Google Sheets에 접근할 수 있도록 설정합니다.
 4. **Google Sheets 시트 준비** — `timestamp`, `cardnumber`, `amt` 컬럼이 있는 시트를 미리 생성합니다.
-5. **테스트용 영수증 이미지** — `6장_카드영수증_예시.jpg` 또는 `6장_카드영수증_예시2.jpeg` 파일을 사용하여 테스트합니다.
+5. **테스트용 영수증 이미지** — `chap6_카드영수증_예시.jpg` 또는 `chap6_카드영수증_예시2.jpeg` 파일을 사용하여 테스트합니다.
