@@ -38,9 +38,9 @@ Discord 노드에서 사용하는 n8n expression입니다.
 - 기온: {{ $json.main.temp }}°C (체감 {{ $json.main.feels_like }}°C)
 - 일출: {{ $json.sys.sunrise.toDateTime('s').format('HH:mm') }} / 일몰: {{ $json.sys.sunset.toDateTime('s').format('HH:mm') }}
 
-🌥️ 내일 예보 (약 24시간 후)
-- 상태: {{ $json.list[10].weather[0].description }}
-- 기온: {{ $json.list[10].main.temp }}°C (체감 {{ $json.list[10].main.feels_like }}°C)
+🌥️ 내일 예보 (오전 9시)
+- 상태: {{ $json.list[11].weather[0].description }}
+- 기온: {{ $json.list[11].main.temp }}°C (체감 {{ $json.list[11].main.feels_like }}°C)
 ```
 
 ## 실습 안내
