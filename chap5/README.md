@@ -1,4 +1,49 @@
-## 프롬프트: 5-3-1 AI에 페르소나 부여하기
+# 5장. 회의록 STT — AssemblyAI 음성 인식 자동화
+
+> iOS 단축어(Shortcut)로 녹음한 음성 파일을 n8n Webhook으로 전달하면, AssemblyAI가 음성을 전사하고 AI가 교정·윤문 후 JSON 형식 회의록을 자동 생성하는 워크플로우
+
+## 워크플로우 개요
+
+| 항목 | 내용 |
+|------|------|
+| 트리거 | Webhook (iOS 단축어에서 오디오 파일 전송) |
+| 주요 서비스 | AssemblyAI, Google Gemini |
+| 출력 | JSON 형식 회의록 (날짜, 제목, 한줄 요약, 참석자, 상세 요약) |
+
+## 워크플로우 흐름
+
+```
+Webhook → HTTP Request (파일 업로드) → HTTP Request (전사 요청) → Wait
+                                                                    │
+                                                       HTTP Request (전사 결과 조회)
+                                                                    │
+                                                              Edit Fields
+                                                                    │
+                                               Basic LLM Chain (교정·윤문) ← Google Gemini Chat Model
+                                                                    │
+                                              Basic LLM Chain (회의록 생성) ← Google Gemini Chat Model
+                                                                    │
+                                                       Respond to Webhook
+```
+
+## 노드 구성
+
+1. **Webhook** — iOS 단축어에서 전송된 오디오 파일(바이너리)을 수신합니다.
+2. **HTTP Request (파일 업로드)** — 오디오 파일을 AssemblyAI 스토리지에 업로드하고 `upload_url`을 받습니다.
+3. **HTTP Request (전사 요청)** — `upload_url`을 포함한 전사 작업을 AssemblyAI에 요청하고 `transcript_id`를 받습니다.
+4. **Wait** — AssemblyAI 전사 처리가 완료될 때까지 일정 시간 대기합니다.
+5. **HTTP Request (전사 결과 조회)** — `transcript_id`로 완료된 전사 결과를 조회합니다.
+6. **Edit Fields** — 전사 결과에서 전사 텍스트(`text`)를 추출합니다.
+7. **Basic LLM Chain (교정·윤문)** — STT 전사 텍스트를 교정 에디터 페르소나 AI로 교정·윤문합니다.
+8. **Google Gemini Chat Model** — LLM Chain의 언어 모델로 사용됩니다. (교정·윤문 및 회의록 생성에 공통 사용)
+9. **Basic LLM Chain (회의록 생성)** — 교정된 텍스트를 바탕으로 JSON 형식 회의록을 생성합니다.
+10. **Respond to Webhook** — 생성된 회의록 JSON을 iOS 단축어에 응답으로 반환합니다.
+
+## 프롬프트
+
+### 5-3-1 AI에 페르소나 부여하기
+
+교정·윤문 LLM Chain (노드 7)에서 사용하는 시스템 프롬프트입니다.
 
 ```
 당신은 전문적인 교정 및 편집 에디터입니다.
@@ -14,8 +59,9 @@
 
 ```
 
+### 5-3-2 회의록 요약하기
 
-## 프롬프트: 5-3-2 [Task] 회의록 요약하기
+회의록 생성 LLM Chain (노드 9)에서 사용하는 시스템 프롬프트입니다.
 
 ```
 당신은 비즈니스 문서 정리에 특화된 '수석 서기'입니다.
@@ -60,3 +106,13 @@
 - meeting_summary 필드에 마크다운 줄바꿈(\n)을 포함하여 텍스트로 넣으세요.
 
 ```
+
+## 실습 안내
+
+### 사전 준비
+
+1. **AssemblyAI API 키** — [AssemblyAI](https://www.assemblyai.com/)에서 무료 계정을 생성하고 API 키를 발급받습니다. n8n의 HTTP Header Auth 자격 증명에 등록합니다.
+2. **Google Gemini API 키** — Google AI Studio에서 API 키를 발급받고 n8n에 등록합니다.
+3. **iOS 단축어 설치** — `audio-transcribe.shortcut`(직접 실행용) 또는 `audio-transcribe(share).shortcut`(공유 시트에서 실행용)을 iPhone에 설치합니다.
+4. **Webhook URL 설정** — n8n에서 Webhook 노드를 활성화한 후, 생성된 URL을 iOS 단축어의 URL 항목에 붙여넣습니다.
+5. **테스트용 오디오 파일** — `chap5_STT_example_audio.mp3` 파일로 워크플로우를 테스트합니다.
